@@ -27,7 +27,7 @@ class _PreviousPageEvent implements _ScrollEvent {
 
 class ScrollablePageView extends StatefulWidget {
   final Widget Function(BuildContext context, int index) itemBuilder;
-  final void Function(double page)? onPageUpdate;
+  final void Function(double page)? onPageUpdated;
   final int itemCount;
   final int initialPage;
   final bool pageSnapping;
@@ -36,7 +36,7 @@ class ScrollablePageView extends StatefulWidget {
     required this.itemBuilder,
     required this.itemCount,
     this.initialPage = 0,
-    this.onPageUpdate,
+    this.onPageUpdated,
     this.pageSnapping = true,
     Key? key,
   }) : super(key: key);
@@ -87,7 +87,7 @@ class _ScrollablePageViewState extends State<ScrollablePageView> {
     });
     pageSnapping = widget.pageSnapping;
     pageListener = () {
-      widget.onPageUpdate?.call(pageController.page!);
+      widget.onPageUpdated?.call(pageController.page! % widget.itemCount);
       if (event != null) {
         final e = event!;
         if (scrollDirection == ScrollDirection.reverse &&

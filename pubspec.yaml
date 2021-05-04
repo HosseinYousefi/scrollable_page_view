@@ -1,5 +1,5 @@
 name: scrollable_page_view
-description: Cycling horizontally scrollable pages inside a horizontal PageView.
+description: Infinite horizontally scrollable pages inside a horizontal PageView.
 version: 0.0.1
 repo: https://github.com/HosseinYousefi/scrollable_page_view
 

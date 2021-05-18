@@ -27,6 +27,7 @@ class _PreviousPageEvent implements _ScrollEvent {
 
 class ScrollablePageView extends StatefulWidget {
   final Widget Function(BuildContext context, int index) itemBuilder;
+  final List<ScrollController>? controllers;
   final void Function(double page)? onPageUpdated;
   final int itemCount;
   final int initialPage;
@@ -35,11 +36,13 @@ class ScrollablePageView extends StatefulWidget {
   ScrollablePageView({
     required this.itemBuilder,
     required this.itemCount,
+    this.controllers,
     this.initialPage = 0,
     this.onPageUpdated,
     this.pageSnapping = true,
     Key? key,
-  }) : super(key: key);
+  })  : assert(controllers == null || controllers.length == itemCount),
+        super(key: key);
 
   @override
   _ScrollablePageViewState createState() => _ScrollablePageViewState();
@@ -73,7 +76,8 @@ class _ScrollablePageViewState extends State<ScrollablePageView> {
       initialPage: 200 * widget.itemCount + widget.initialPage,
       viewportFraction: 0.9999,
     );
-    controllers = List.generate(widget.itemCount, (_) => ScrollController());
+    controllers = widget.controllers ??
+        List.generate(widget.itemCount, (_) => ScrollController());
     scrollListeners = List.generate(widget.itemCount, (index) {
       return () {
         if (controllers[index].offset >
@@ -171,6 +175,9 @@ class _ScrollablePageViewState extends State<ScrollablePageView> {
             physics: NeverScrollableScrollPhysics(),
             pageSnapping: pageSnapping,
             itemBuilder: (context, index) {
+              if (widget.controllers != null) {
+                return widget.itemBuilder(context, index % widget.itemCount);
+              }
               return SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 controller: controllers[index % widget.itemCount],

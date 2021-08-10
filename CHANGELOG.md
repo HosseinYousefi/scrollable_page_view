@@ -1,3 +1,7 @@
+## [0.0.5]
+
+* Added `onDragStart` and `onDragEnd`.
+
 ## [0.0.4]
 
 * Added `onScroll` which will be called when scroll position within a page gets updated

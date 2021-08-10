@@ -30,6 +30,8 @@ class ScrollablePageView extends StatefulWidget {
   final List<ScrollController>? controllers;
   final void Function(double page)? onPageUpdated;
   final void Function(double offset, double maxExtent)? onScroll;
+  final void Function()? onDragStart;
+  final void Function()? onDragEnd;
   final int itemCount;
   final int initialPage;
   final bool pageSnapping;
@@ -41,6 +43,8 @@ class ScrollablePageView extends StatefulWidget {
     this.initialPage = 0,
     this.onPageUpdated,
     this.onScroll,
+    this.onDragStart,
+    this.onDragEnd,
     this.pageSnapping = true,
     Key? key,
   })  : assert(controllers == null || controllers.length == itemCount),
@@ -139,6 +143,7 @@ class _ScrollablePageViewState extends State<ScrollablePageView> {
     setState(() {
       pageSnapping = false;
     });
+    widget.onDragStart?.call();
   }
 
   void _handleDragUpdate(DragUpdateDetails details) {
@@ -164,6 +169,7 @@ class _ScrollablePageViewState extends State<ScrollablePageView> {
     setState(() {
       pageSnapping = widget.pageSnapping;
     });
+    widget.onDragEnd?.call();
   }
 
   @override

@@ -1,3 +1,7 @@
+## [0.0.6]
+
+* Added `onScroll` now has an `index` argument as well
+
 ## [0.0.5]
 
 * Added `onDragStart` and `onDragEnd`.

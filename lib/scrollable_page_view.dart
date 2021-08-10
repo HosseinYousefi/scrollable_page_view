@@ -29,6 +29,7 @@ class ScrollablePageView extends StatefulWidget {
   final Widget Function(BuildContext context, int index) itemBuilder;
   final List<ScrollController>? controllers;
   final void Function(double page)? onPageUpdated;
+  final void Function(double offset, double maxExtent)? onScroll;
   final int itemCount;
   final int initialPage;
   final bool pageSnapping;
@@ -39,6 +40,7 @@ class ScrollablePageView extends StatefulWidget {
     this.controllers,
     this.initialPage = 0,
     this.onPageUpdated,
+    this.onScroll,
     this.pageSnapping = true,
     Key? key,
   })  : assert(controllers == null || controllers.length == itemCount),
@@ -80,6 +82,8 @@ class _ScrollablePageViewState extends State<ScrollablePageView> {
         List.generate(widget.itemCount, (_) => ScrollController());
     scrollListeners = List.generate(widget.itemCount, (index) {
       return () {
+        widget.onScroll?.call(controllers[index].offset,
+            controllers[index].position.maxScrollExtent);
         if (controllers[index].offset >
             controllers[index].position.maxScrollExtent) {
           event = _NextPageEvent(pageController.page!.round());

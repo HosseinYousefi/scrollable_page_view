@@ -75,6 +75,12 @@ class _ScrollablePageViewState extends State<ScrollablePageView>
     }
   }
 
+  void _jumpToStart(int index) {
+    if (controllers[index].hasClients) {
+      controllers[index].jumpTo(controllers[index].position.minScrollExtent);
+    }
+  }
+
   void _jumpToEnd(int index) {
     if (controllers[index].hasClients) {
       controllers[index].jumpTo(controllers[index].position.maxScrollExtent);
@@ -86,7 +92,6 @@ class _ScrollablePageViewState extends State<ScrollablePageView>
     setState(() {
       velocity = 0.0;
       lastX = 0.0;
-      event = null;
       pageSnapping = widget.pageSnapping;
     });
   }
@@ -119,17 +124,20 @@ class _ScrollablePageViewState extends State<ScrollablePageView>
         List.generate(widget.itemCount, (_) => ScrollController());
     scrollListeners = List.generate(widget.itemCount, (index) {
       return () {
-        widget.onScroll?.call(
-          index,
-          controllers[index].offset,
-          controllers[index].position.maxScrollExtent,
-        );
-        if (controllers[index].offset >
-            controllers[index].position.maxScrollExtent) {
-          event = _NextPageEvent(pageController.page!.round());
-        }
-        if (controllers[index].offset < 0) {
-          event = _PreviousPageEvent(pageController.page!.round());
+        if (event == null) {
+          widget.onScroll?.call(
+            index,
+            controllers[index].offset,
+            controllers[index].position.maxScrollExtent,
+          );
+          if (controllers[index].offset >
+              controllers[index].position.maxScrollExtent) {
+            event = _NextPageEvent(pageController.page!.round());
+          }
+          if (controllers[index].offset <
+              controllers[index].position.minScrollExtent) {
+            event = _PreviousPageEvent(pageController.page!.round());
+          }
         }
       };
     });
@@ -140,12 +148,12 @@ class _ScrollablePageViewState extends State<ScrollablePageView>
         final e = event!;
         if (scrollDirection == ScrollDirection.forward &&
             e is _NextPageEvent &&
-            pageController.page!.floor() >= e.currentPage + 1) {
+            pageController.page!.floor() == e.currentPage + 1) {
           event = null;
         }
         if (scrollDirection == ScrollDirection.reverse &&
             e is _PreviousPageEvent &&
-            pageController.page!.ceil() <= e.currentPage - 1) {
+            pageController.page!.ceil() == e.currentPage - 1) {
           event = null;
         }
         if (scrollDirection == ScrollDirection.reverse &&
@@ -157,6 +165,11 @@ class _ScrollablePageViewState extends State<ScrollablePageView>
             e is _PreviousPageEvent &&
             pageController.page!.floor() == e.currentPage) {
           event = null;
+        }
+        if (e is _NextPageEvent &&
+            pageController.page!.floor() == e.currentPage) {
+          final nextPage = (e.currentPage + 1) % widget.itemCount;
+          _jumpToStart(nextPage);
         }
         if (e is _PreviousPageEvent &&
             pageController.page!.ceil() == e.currentPage) {

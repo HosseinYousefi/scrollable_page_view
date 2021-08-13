@@ -1,3 +1,7 @@
+## [0.0.8]
+
+* Fixed a bug in scrolling.
+
 ## [0.0.7]
 
 * Added velocity and friction when you finish scrolling.

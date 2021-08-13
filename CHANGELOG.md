@@ -1,3 +1,7 @@
+## [0.0.7]
+
+* Added velocity and friction when you finish scrolling.
+
 ## [0.0.6]
 
 * Added `onScroll` now has an `index` argument as well

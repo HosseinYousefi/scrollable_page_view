@@ -1,7 +1,9 @@
 library scrollable_page_view;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/physics.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
 
 abstract class _ScrollEvent {}
 
@@ -54,14 +56,18 @@ class ScrollablePageView extends StatefulWidget {
   _ScrollablePageViewState createState() => _ScrollablePageViewState();
 }
 
-class _ScrollablePageViewState extends State<ScrollablePageView> {
+class _ScrollablePageViewState extends State<ScrollablePageView>
+    with SingleTickerProviderStateMixin {
   late final List<ScrollController> controllers;
   late final List<void Function()> scrollListeners;
   late final void Function() pageListener;
   late final PageController pageController;
+  double velocity = 0.0;
+  double lastX = 0.0;
   late bool pageSnapping;
   ScrollDirection scrollDirection = ScrollDirection.idle;
   _ScrollEvent? event;
+  late final Ticker ticker;
 
   void _jumpRelative(int index, double delta) {
     if (controllers[index].hasClients) {
@@ -75,9 +81,36 @@ class _ScrollablePageViewState extends State<ScrollablePageView> {
     }
   }
 
+  void stopAutoScroll() {
+    ticker.stop();
+    setState(() {
+      velocity = 0.0;
+      lastX = 0.0;
+      event = null;
+      pageSnapping = widget.pageSnapping;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
+    ticker = createTicker((elapsed) {
+      final t = elapsed.inMilliseconds / 1000;
+      final simul = BouncingScrollSimulation(
+        position: 0,
+        velocity: velocity,
+        leadingExtent: -double.infinity,
+        trailingExtent: double.infinity,
+        spring: SpringDescription.withDampingRatio(mass: 1, stiffness: 1),
+      );
+      final x = simul.x(t);
+      if (t.abs() > 1e-6 && (x - lastX).abs() < 0.2) {
+        stopAutoScroll();
+        return;
+      }
+      _handleDragDx(x - lastX);
+      lastX = x;
+    });
     pageController = PageController(
       initialPage: 200 * widget.itemCount + widget.initialPage,
       viewportFraction: 0.9999,
@@ -105,6 +138,16 @@ class _ScrollablePageViewState extends State<ScrollablePageView> {
       widget.onPageUpdated?.call(pageController.page! % widget.itemCount);
       if (event != null) {
         final e = event!;
+        if (scrollDirection == ScrollDirection.forward &&
+            e is _NextPageEvent &&
+            pageController.page!.floor() >= e.currentPage + 1) {
+          event = null;
+        }
+        if (scrollDirection == ScrollDirection.reverse &&
+            e is _PreviousPageEvent &&
+            pageController.page!.ceil() <= e.currentPage - 1) {
+          event = null;
+        }
         if (scrollDirection == ScrollDirection.reverse &&
             e is _NextPageEvent &&
             pageController.page!.ceil() == e.currentPage) {
@@ -133,6 +176,7 @@ class _ScrollablePageViewState extends State<ScrollablePageView> {
 
   @override
   void dispose() {
+    ticker.dispose();
     pageController.removeListener(pageListener);
     pageController.dispose();
     for (var i = 0; i < widget.itemCount; ++i) {
@@ -143,6 +187,7 @@ class _ScrollablePageViewState extends State<ScrollablePageView> {
   }
 
   void _handleDragStart(DragStartDetails details) {
+    stopAutoScroll();
     setState(() {
       pageSnapping = false;
     });
@@ -150,7 +195,10 @@ class _ScrollablePageViewState extends State<ScrollablePageView> {
   }
 
   void _handleDragUpdate(DragUpdateDetails details) {
-    final dx = details.delta.dx;
+    _handleDragDx(details.delta.dx);
+  }
+
+  void _handleDragDx(double dx) {
     if (dx == 0) {
       scrollDirection = ScrollDirection.idle;
     } else if (dx < 0) {
@@ -168,11 +216,9 @@ class _ScrollablePageViewState extends State<ScrollablePageView> {
   }
 
   void _handleDragEnd(DragEndDetails details) {
-    event = null;
-    setState(() {
-      pageSnapping = widget.pageSnapping;
-    });
     widget.onDragEnd?.call();
+    velocity = details.primaryVelocity!;
+    ticker.start();
   }
 
   @override

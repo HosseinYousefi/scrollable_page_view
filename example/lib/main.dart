@@ -6,6 +6,7 @@ void main() => runApp(App());
 class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    const swatches = [Colors.red, Colors.yellow, Colors.green, Colors.blue];
     return MaterialApp(
         home: Material(
       child: ScrollablePageView(
@@ -15,7 +16,7 @@ class App extends StatelessWidget {
               9,
               (idx) => Container(
                 width: 100,
-                color: Colors.red[(idx + 1) * 100],
+                color: swatches[index][(idx + 1) * 100],
                 child: Center(
                   child: Text('$idx'),
                 ),

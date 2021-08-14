@@ -125,6 +125,7 @@ class _ScrollablePageViewState extends State<ScrollablePageView>
     scrollListeners = List.generate(widget.itemCount, (index) {
       return () {
         if (event == null) {
+          pageController.jumpToPage(pageController.page!.round());
           widget.onScroll?.call(
             index,
             controllers[index].offset,

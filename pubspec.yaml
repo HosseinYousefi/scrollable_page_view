@@ -1,6 +1,6 @@
 name: scrollable_page_view
 description: Infinite horizontally scrollable pages inside a horizontal PageView.
-version: 0.0.8
+version: 0.0.9
 repository: https://github.com/HosseinYousefi/scrollable_page_view
 
 environment:

@@ -1,3 +1,7 @@
+## [0.0.10]
+
+* Improved page snapping
+
 ## [0.0.9]
 
 * Fixed a bug

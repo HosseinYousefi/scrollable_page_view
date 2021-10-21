@@ -101,19 +101,19 @@ class _ScrollablePageViewState extends State<ScrollablePageView>
     super.initState();
     ticker = createTicker((elapsed) {
       final t = elapsed.inMilliseconds / 1000;
-      final simul = BouncingScrollSimulation(
-        position: 0,
-        velocity: velocity,
-        leadingExtent: -double.infinity,
-        trailingExtent: double.infinity,
-        spring: SpringDescription.withDampingRatio(mass: 1, stiffness: 1),
+      const drag = 0.05;
+      final simul = FrictionSimulation(
+        drag,
+        0,
+        velocity,
       );
       final x = simul.x(t);
+      final dx = simul.dx(t);
       if (t.abs() > 1e-6 && (x - lastX).abs() < 0.2) {
         stopAutoScroll();
         return;
       }
-      _handleDragDx(x - lastX);
+      _handleDragDx(x - lastX, velocity: dx);
       lastX = x;
     });
     pageController = PageController(
@@ -212,7 +212,10 @@ class _ScrollablePageViewState extends State<ScrollablePageView>
     _handleDragDx(details.delta.dx);
   }
 
-  void _handleDragDx(double dx) {
+  void _handleDragDx(
+    double dx, {
+    double? velocity,
+  }) {
     if (dx == 0) {
       scrollDirection = ScrollDirection.idle;
     } else if (dx < 0) {
@@ -225,6 +228,12 @@ class _ScrollablePageViewState extends State<ScrollablePageView>
       final page = pageController.page!.round() % widget.itemCount;
       _jumpRelative(page, -dx);
     } else {
+      const tolerance = 500;
+      // Snapping immediately if the velocity gets lower than the tolerance
+      if (velocity != null && velocity.abs() < tolerance) {
+        print(velocity);
+        stopAutoScroll();
+      }
       pageController.jumpTo(pageController.offset - dx);
     }
   }

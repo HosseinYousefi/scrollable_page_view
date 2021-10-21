@@ -1,3 +1,7 @@
+## [0.0.11]
+
+* Removed an accidental print
+
 ## [0.0.10]
 
 * Improved page snapping

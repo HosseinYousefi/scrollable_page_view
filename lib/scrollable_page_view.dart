@@ -231,10 +231,10 @@ class _ScrollablePageViewState extends State<ScrollablePageView>
       const tolerance = 500;
       // Snapping immediately if the velocity gets lower than the tolerance
       if (velocity != null && velocity.abs() < tolerance) {
-        print(velocity);
         stopAutoScroll();
+      } else {
+        pageController.jumpTo(pageController.offset - dx);
       }
-      pageController.jumpTo(pageController.offset - dx);
     }
   }
 

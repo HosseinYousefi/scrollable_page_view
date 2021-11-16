@@ -1,3 +1,7 @@
+## [0.0.13]
+
+* Reverting 0.0.12, will plan to roll it out differently since builder is not usually caching in flutter
+
 ## [0.0.12]
 
 * Caching the widget builds

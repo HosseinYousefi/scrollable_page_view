@@ -62,7 +62,6 @@ class _ScrollablePageViewState extends State<ScrollablePageView>
   late final List<void Function()> scrollListeners;
   late final void Function() pageListener;
   late final PageController pageController;
-  late final List<Widget> widgets;
   double velocity = 0.0;
   double lastX = 0.0;
   late bool pageSnapping;
@@ -187,10 +186,6 @@ class _ScrollablePageViewState extends State<ScrollablePageView>
       }
       pageController.addListener(pageListener);
     });
-    widgets = [];
-    for (var i = 0; i < widget.itemCount; ++i) {
-      widgets.add(widget.itemBuilder(context, i));
-    }
   }
 
   @override
@@ -263,14 +258,14 @@ class _ScrollablePageViewState extends State<ScrollablePageView>
             pageSnapping: pageSnapping,
             itemBuilder: (context, index) {
               if (widget.controllers != null) {
-                return widgets[index % widget.itemCount];
+                return widget.itemBuilder(context, index % widget.itemCount);
               }
               return SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 controller: controllers[index % widget.itemCount],
                 physics: NeverScrollableScrollPhysics(),
                 child: Container(
-                  child: widgets[index % widget.itemCount],
+                  child: widget.itemBuilder(context, index % widget.itemCount),
                 ),
               );
             },

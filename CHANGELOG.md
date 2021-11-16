@@ -1,3 +1,7 @@
+## [0.0.12]
+
+* Caching the widget builds
+
 ## [0.0.11]
 
 * Removed an accidental print
